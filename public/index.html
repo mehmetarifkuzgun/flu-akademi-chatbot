@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flu Akademi Ders Asistanı</title>
+
+        <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="shortcut icon" href="/static/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon.png">
+    
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div id="react-root">
+        <div class="fui-FluentProvider app-container">
+            <!-- Waves Animation Container -->
+            <div class="_wavesContainer_13xc0_116">
+                <canvas id="waves-animation" width="1495" height="197"></canvas>
+            </div>
+            
+            <!-- Main Container -->
+            <div class="_container_13xc0_1">
+                <!-- Top Bar -->
+                <div class="_topBar_13xc0_13">
+                    <div class="_leftSection_13xc0_25">
+                        <div class="_agentIconContainer_13xc0_42">
+                            <div class="_iconContainer_qpaoh_1">
+                                <img alt="" class="_agentIcon_13xc0_42" src="/static/Avatar_Default.svg">
+                            </div>
+                            <h1 class="_agentName_13xc0_59">Flu Akademi Ders Asistanı</h1>
+                        </div>
+                    </div>
+                    <div class="_rightSection_13xc0_35">
+                        <button type="button" class="new-chat-btn">
+                            <span class="button-icon">
+                                <svg fill="currentColor" width="16" height="16" viewBox="0 0 20 20">
+                                    <path d="M10 2a8 8 0 1 1-3.61 15.14l-.12-.07-3.65.92a.5.5 0 0 1-.62-.45v-.08l.01-.08.92-3.64-.07-.12a7.95 7.95 0 0 1-.83-2.9l-.02-.37L2 10a8 8 0 0 1 8-8Zm0 1a7 7 0 0 0-6.1 10.42.5.5 0 0 1 .06.28l-.02.1-.75 3.01 3.02-.75a.5.5 0 0 1 .19-.01l.09.02.09.04A7 7 0 1 0 10 3Zm.5 8a.5.5 0 0 1 .09 1H7.5a.5.5 0 0 1-.09-1h3.09Zm2-3a.5.5 0 0 1 .09 1H7.5a.5.5 0 0 1-.09-1h5.09Z"/>
+                                </svg>
+                            </span>
+                            New Chat
+                        </button>
+                        <button type="button" class="course-selector-btn" aria-label="Ders Seç">
+                            <span class="button-icon">
+                                <svg fill="currentColor" width="16" height="16" viewBox="0 0 20 20">
+                                    <path d="M3 6a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6zm3-2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6zm2 5a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1zm1 3a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2H9z"/>
+                                </svg>
+                            </span>
+                            Dersler
+                        </button>
+                        
+                        <!-- Course Selection Dropdown -->
+                        <div class="course-dropdown" id="course-dropdown">
+                            <div class="course-dropdown-header">
+                                <h3>Ders Seçin</h3>
+                                <button class="close-dropdown" id="close-dropdown">×</button>
+                            </div>
+                            <div class="course-list">
+                                <div class="course-item" data-course="neolitik">
+                                    <div class="course-video-preview">
+                                        <img src="https://img.youtube.com/vi/BuYCChDWRr8/default.jpg" alt="Neolitik Devrim" class="video-thumbnail">
+                                        <div class="play-button">▶</div>
+                                    </div>
+                                    <div class="course-info">
+                                        <h4>İnsanlık Tarihindeki En Büyük Dönüşüm - Nevzat Kaya | Mitoloji - Flu Akademi</h4>
+                                        <p>Tarımın icadı ve yerleşik hayata geçişin toplumsal etkileri</p>
+                                        <span class="course-duration">42 dk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="_content_13xc0_70">
+                    <div class="_chatbot_13xc0_98">
+                        <!-- Empty Chat State -->
+                        <div class="_emptyChatContainer_13xc0_106">
+                            <div class="_iconContainer_qpaoh_1">
+                                <img alt="" class="_emptyStateAgentIcon_13xc0_149" src="/static/Avatar_Default.svg">
+                            </div>
+                            <span class="_agentName_13xc0_59">Flu Akademi Ders Asistanı</span>
+                            <span class="main-title">Merhaba. Size nasıl yardımcı olabilirim?</span>
+                            <h6 style="font-weight: normal;"><i>Bu dersin konusu Neolitik Devrim'in insanlıkta yarattığı toplumsal dönüşüm. Ne hakkında konuşmak istersin?</i></h6>
+
+                        </div>
+
+                        <!-- Chat Container -->
+                        <div class="_chatContainer_145rh_1 _emptyChatContainer_145rh_35">
+                            <div id="messages-container"></div>
+                            
+                            <!-- Quick Message Buttons -->
+                            <div class="quick-messages-container" id="quick-messages">
+                                <div class="quick-message-btn" data-message="Neolitik Devrim nedir ve neden önemlidir?">
+                                    Neolitik Devrim nedir?
+                                </div>
+                                <div class="quick-message-btn" data-message="Tarım devrimi insanlığı nasıl etkiledi?">
+                                    Tarım devrimi etkiler
+                                </div>
+                                <div class="quick-message-btn" data-message="Yerleşik hayata geçişin sonuçları nelerdir?">
+                                    Yerleşik hayat sonuçları
+                                </div>
+                                <div class="quick-message-btn" data-message="Bu konuyla ilgili örnekler verebilir misin?">
+                                    Örnekler ver
+                                </div>
+                            </div>
+                            
+                            <!-- Input Container -->
+                            <div class="_inputContainer_145rh_75">
+                                <div class="chat-input-wrapper">
+                                    <div class="chat-input-container">
+                                        <div class="chat-input-editor">
+                                            <div 
+                                                id="chat-input" 
+                                                class="chat-input-field" 
+                                                contenteditable="true" 
+                                                data-placeholder="Type your message here..."
+                                                role="textbox"
+                                                aria-label="Chat Input"
+                                            ></div>
+                                        </div>
+                                        <div class="chat-input-actions">
+                                            <button type="submit" aria-label="Send" class="send-button" id="send-btn">
+                                                <span class="send-icon">
+                                                    <svg fill="currentColor" width="16" height="16" viewBox="0 0 20 20">
+                                                        <path d="M2.72 2.05a.5.5 0 0 0-.7.58l1.5 5.62c.05.19.2.33.4.36l6.85 1.14c.28.05.28.45 0 .5l-6.85 1.14a.5.5 0 0 0-.4.36l-1.5 5.62a.5.5 0 0 0 .7.58l15-7.5a.5.5 0 0 0 0-.9l-15-7.5Z"/>
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="_builtWithBadge_13xc0_86">
+                    <span class="_description_x2i82_20">"We know, now, that we are in the presence of myths."</span>
+                    <span class="_brand_x2i82_25">
+                        -David Graber-
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
