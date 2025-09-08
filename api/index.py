@@ -13,68 +13,94 @@ try:
     print("✅ AgenticDemoChatbot imported successfully")
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    print("🔄 Creating minimal vector search chatbot...")
+    print("🔄 Creating ultra-minimal smart chatbot...")
     
     import google.generativeai as genai
     import os
-    from typing import List
+    import re
     
-    class MinimalVectorChatbot:
+    class UltraMinimalChatbot:
         def __init__(self):
             api_key = os.getenv("GOOGLE_API_KEY")
             if not api_key:
                 raise ValueError("GOOGLE_API_KEY environment variable is required")
             genai.configure(api_key=api_key)
             self.model = genai.GenerativeModel('gemini-pro')
-            self.embedding_model = genai.GenerativeModel('models/embedding-001')
             
-            # In-memory knowledge base
-            self.knowledge_base = [
-                "Neolitik Devrim, yaklaşık 10.000 yıl önce insanlığın tarım ve hayvancılığa geçişi ile başlayan büyük dönüşümdür.",
-                "Bu dönemde insanlar avcı-toplayıcı yaşamdan yerleşik tarım toplumuna geçmiştir.",
-                "İlk tarım merkezleri Mezopotamya, Anadolu ve Mısır'da ortaya çıkmıştır.",
-                "Tarım devrimi ile birlikte nüfus artışı, şehirleşme ve uzmanlaşma başlamıştır.",
-                "Çanak çömlek, dokumacılık ve metal işçiliği bu dönemde gelişmiştir."
+            # Neolitik Devrim bilgi tabanı
+            self.knowledge_chunks = [
+                "Neolitik Devrim: M.Ö. 10.000-8.000 yılları arasında gerçekleşen büyük dönüşüm",
+                "Tarım devrimi: İnsanların avcı-toplayıcılıktan tarıma geçişi",
+                "Yerleşik hayat: Köyler ve ilk şehirlerin kurulması",
+                "Anadolu: Çatalhöyük, Göbekli Tepe gibi önemli Neolitik merkezler",
+                "Teknolojik gelişmeler: Çanak çömlek, dokumacılık, tarım aletleri",
+                "Toplumsal değişim: Uzmanlaşma, ticaret, sosyal tabakalaşma",
+                "Hayvan evcilleştirme: Köpek, koyun, keçi, sığır, domuz",
+                "Bitki yetiştirme: Buğday, arpa, mercimek, bezelye",
+                "Çevre etkisi: Ormanların azalması, toprak erozyonu",
+                "Nüfus artışı: Gıda üretiminin artmasıyla demografik patlama"
             ]
             
-        def search_knowledge(self, query: str) -> str:
-            # Basit keyword matching ile knowledge search
+        def smart_search(self, query: str) -> str:
+            """Basit ama akıllı arama"""
             query_lower = query.lower()
-            relevant_info = []
             
-            for info in self.knowledge_base:
-                if any(word in info.lower() for word in query_lower.split()):
-                    relevant_info.append(info)
+            # Anahtar kelime eşleştirme
+            relevant_chunks = []
+            keywords = query_lower.split()
             
-            return "\n".join(relevant_info[:3]) if relevant_info else ""
+            for chunk in self.knowledge_chunks:
+                chunk_lower = chunk.lower()
+                score = 0
+                for keyword in keywords:
+                    if keyword in chunk_lower:
+                        score += 1
+                    # Benzer kelimeler
+                    if keyword in ["tarım", "ziraat"] and any(word in chunk_lower for word in ["tarım", "bitki", "buğday"]):
+                        score += 1
+                    if keyword in ["şehir", "kent", "yerleşim"] and any(word in chunk_lower for word in ["yerleşik", "köy", "şehir"]):
+                        score += 1
+                        
+                if score > 0:
+                    relevant_chunks.append((chunk, score))
+            
+            # Skora göre sırala ve en iyi 3'ünü al
+            relevant_chunks.sort(key=lambda x: x[1], reverse=True)
+            return "\n".join([chunk[0] for chunk in relevant_chunks[:3]])
             
         def ask_question_stream(self, question: str):
             try:
-                # Knowledge base'den ilgili bilgi al
-                context = self.search_knowledge(question)
+                # Akıllı arama ile context bul
+                context = self.smart_search(question)
                 
-                system_prompt = f"""Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
-                Aşağıdaki bilgileri kullanarak soruyu yanıtla:
+                system_prompt = f"""Sen Flu Akademi'nin Neolitik Devrim uzmanı ders asistanısın.
+
+Aşağıdaki kaynak bilgileri kullanarak soruyu yanıtla:
+{context}
+
+Kurallar:
+- Türkçe yanıt ver
+- Akademik ama anlaşılır dil kullan
+- Kaynak bilgileri varsa bunları temel al
+- Bilgin yoksa genel Neolitik bilgilerini kullan
+- Öğrenciye faydalı ve detaylı açıklamalar yap"""
                 
-                {context}
-                
-                Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
-                
-                full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
+                full_prompt = f"{system_prompt}\n\nÖğrenci Sorusu: {question}\n\nYanıt:"
                 response = self.model.generate_content(full_prompt, stream=True)
                 
                 for chunk in response:
                     if chunk.text:
                         yield chunk.text
+                        
             except Exception as e:
                 yield f"❌ Hata: {str(e)}"
                 
         def ask_question_agentic_stream(self, question: str):
-            # Fallback to normal stream
+            """Agentic versiyon - aynı fonksiyonalite"""
             return self.ask_question_stream(question)
                     
-    AgenticDemoChatbot = MinimalVectorChatbot
-    print("✅ MinimalVectorChatbot created successfully")
+    AgenticDemoChatbot = UltraMinimalChatbot
+    print("✅ UltraMinimalChatbot created with smart search!")
 
 app = FastAPI()
 
