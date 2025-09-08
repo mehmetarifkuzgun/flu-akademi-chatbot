@@ -13,32 +13,43 @@ try:
     print("✅ AgenticDemoChatbot imported successfully")
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    # ChromaDB olmadan basit chatbot oluştur
-    import google.generativeai as genai
-    import os
+    print("🔄 Trying alternative imports...")
     
-    class SimpleChatbot:
-        def __init__(self):
-            api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyBmM645CwfEOyhkJj7U9zX1OFXZC3BDUMM")
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
-            
-        def ask_question_stream(self, question: str):
-            try:
-                system_prompt = """Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
-                Öğrencilere Neolitik dönem, tarım devrimi, yerleşik hayata geçiş ve bu dönemin toplumsal etkileri hakkında 
-                bilgi veriyorsun. Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
+    # Alternatif import denemeleri
+    try:
+        from gemini_chatbot import AgenticGeminiChatbot
+        AgenticDemoChatbot = AgenticGeminiChatbot
+        print("✅ AgenticGeminiChatbot imported as fallback")
+    except ImportError:
+        # Son çare: basit chatbot
+        import google.generativeai as genai
+        import os
+        
+        class SimpleChatbot:
+            def __init__(self):
+                api_key = os.getenv("GOOGLE_API_KEY")
+                if not api_key:
+                    raise ValueError("GOOGLE_API_KEY environment variable is required")
+                genai.configure(api_key=api_key)
+                self.model = genai.GenerativeModel('gemini-pro')
                 
-                full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
-                response = self.model.generate_content(full_prompt, stream=True)
-                
-                for chunk in response:
-                    if chunk.text:
-                        yield chunk.text
-            except Exception as e:
-                yield f"❌ Hata: {str(e)}"
-                
-    AgenticDemoChatbot = SimpleChatbot
+            def ask_question_stream(self, question: str):
+                try:
+                    system_prompt = """Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
+                    Öğrencilere Neolitik dönem, tarım devrimi, yerleşik hayata geçiş ve bu dönemin toplumsal etkileri hakkında 
+                    bilgi veriyorsun. Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
+                    
+                    full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
+                    response = self.model.generate_content(full_prompt, stream=True)
+                    
+                    for chunk in response:
+                        if chunk.text:
+                            yield chunk.text
+                except Exception as e:
+                    yield f"❌ Hata: {str(e)}"
+                    
+        AgenticDemoChatbot = SimpleChatbot
+        print("⚠️ Using SimpleChatbot fallback (no vector search)")
 
 app = FastAPI()
 
@@ -130,15 +141,20 @@ async def startup_event():
     try:
         if AgenticDemoChatbot:
             chatbot = AgenticDemoChatbot()
-            # Chatbot'u kısıtlı modda başlat
+            # Database kurulum denemesi (opsiyonel)
             try:
-                chatbot.setup_database()
-                print("✅ Database kurulumu tamamlandı")
+                if hasattr(chatbot, 'setup_database'):
+                    chatbot.setup_database()
+                    print("✅ Vector database kurulumu tamamlandı")
+                else:
+                    print("⚠️ SimpleChatbot kullanılıyor (vector search yok)")
             except Exception as db_error:
-                print(f"⚠️ Database kurulum hatası (devam ediliyor): {db_error}")
-                # Database hatasında bile chatbot'u başlat (sınırlı özelliklerle)
+                print(f"⚠️ Database kurulum hatası: {db_error}")
+                print("🔄 Chatbot vector search olmadan çalışacak")
+                # Database hatasında bile chatbot'u başlat
                 try:
-                    chatbot._register_agent_tools_limited()
+                    if hasattr(chatbot, '_register_agent_tools_limited'):
+                        chatbot._register_agent_tools_limited()
                 except:
                     pass
             print("✅ Chatbot başlatıldı")
