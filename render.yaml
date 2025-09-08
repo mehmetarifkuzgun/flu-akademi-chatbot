@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: flu-akademi-chatbot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python api/index.py
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: EMBEDDING_MODEL
+        value: models/embedding-001
+      - key: CHUNK_SIZE
+        value: 1000
+      - key: CHUNK_OVERLAP
+        value: 200
+      - key: VECTOR_DB_PATH
+        value: /opt/render/project/src/chroma_db
