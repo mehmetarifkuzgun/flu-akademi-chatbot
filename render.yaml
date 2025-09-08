@@ -3,7 +3,7 @@ services:
     name: flu-akademi-chatbot
     env: python
     plan: free
-    pythonVersion: "3.11.9"
+    pythonVersion: "3.12"
     buildCommand: pip install -r requirements.txt
     startCommand: python api/index.py
     envVars:

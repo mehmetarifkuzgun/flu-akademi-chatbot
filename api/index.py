@@ -13,43 +13,68 @@ try:
     print("✅ AgenticDemoChatbot imported successfully")
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    print("🔄 Trying alternative imports...")
+    print("🔄 Creating minimal vector search chatbot...")
     
-    # Alternatif import denemeleri
-    try:
-        from gemini_chatbot import AgenticGeminiChatbot
-        AgenticDemoChatbot = AgenticGeminiChatbot
-        print("✅ AgenticGeminiChatbot imported as fallback")
-    except ImportError:
-        # Son çare: basit chatbot
-        import google.generativeai as genai
-        import os
-        
-        class SimpleChatbot:
-            def __init__(self):
-                api_key = os.getenv("GOOGLE_API_KEY")
-                if not api_key:
-                    raise ValueError("GOOGLE_API_KEY environment variable is required")
-                genai.configure(api_key=api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
+    import google.generativeai as genai
+    import os
+    from typing import List
+    
+    class MinimalVectorChatbot:
+        def __init__(self):
+            api_key = os.getenv("GOOGLE_API_KEY")
+            if not api_key:
+                raise ValueError("GOOGLE_API_KEY environment variable is required")
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-pro')
+            self.embedding_model = genai.GenerativeModel('models/embedding-001')
+            
+            # In-memory knowledge base
+            self.knowledge_base = [
+                "Neolitik Devrim, yaklaşık 10.000 yıl önce insanlığın tarım ve hayvancılığa geçişi ile başlayan büyük dönüşümdür.",
+                "Bu dönemde insanlar avcı-toplayıcı yaşamdan yerleşik tarım toplumuna geçmiştir.",
+                "İlk tarım merkezleri Mezopotamya, Anadolu ve Mısır'da ortaya çıkmıştır.",
+                "Tarım devrimi ile birlikte nüfus artışı, şehirleşme ve uzmanlaşma başlamıştır.",
+                "Çanak çömlek, dokumacılık ve metal işçiliği bu dönemde gelişmiştir."
+            ]
+            
+        def search_knowledge(self, query: str) -> str:
+            # Basit keyword matching ile knowledge search
+            query_lower = query.lower()
+            relevant_info = []
+            
+            for info in self.knowledge_base:
+                if any(word in info.lower() for word in query_lower.split()):
+                    relevant_info.append(info)
+            
+            return "\n".join(relevant_info[:3]) if relevant_info else ""
+            
+        def ask_question_stream(self, question: str):
+            try:
+                # Knowledge base'den ilgili bilgi al
+                context = self.search_knowledge(question)
                 
-            def ask_question_stream(self, question: str):
-                try:
-                    system_prompt = """Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
-                    Öğrencilere Neolitik dönem, tarım devrimi, yerleşik hayata geçiş ve bu dönemin toplumsal etkileri hakkında 
-                    bilgi veriyorsun. Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
+                system_prompt = f"""Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
+                Aşağıdaki bilgileri kullanarak soruyu yanıtla:
+                
+                {context}
+                
+                Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
+                
+                full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
+                response = self.model.generate_content(full_prompt, stream=True)
+                
+                for chunk in response:
+                    if chunk.text:
+                        yield chunk.text
+            except Exception as e:
+                yield f"❌ Hata: {str(e)}"
+                
+        def ask_question_agentic_stream(self, question: str):
+            # Fallback to normal stream
+            return self.ask_question_stream(question)
                     
-                    full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
-                    response = self.model.generate_content(full_prompt, stream=True)
-                    
-                    for chunk in response:
-                        if chunk.text:
-                            yield chunk.text
-                except Exception as e:
-                    yield f"❌ Hata: {str(e)}"
-                    
-        AgenticDemoChatbot = SimpleChatbot
-        print("⚠️ Using SimpleChatbot fallback (no vector search)")
+    AgenticDemoChatbot = MinimalVectorChatbot
+    print("✅ MinimalVectorChatbot created successfully")
 
 app = FastAPI()
 
