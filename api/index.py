@@ -107,13 +107,26 @@ async def startup_event():
             # Chatbot'u kısıtlı modda başlat
             try:
                 chatbot.setup_database()
+                print("✅ Database kurulumu tamamlandı")
             except Exception as db_error:
                 print(f"⚠️ Database kurulum hatası (devam ediliyor): {db_error}")
+                # Database hatasında bile chatbot'u başlat (sınırlı özelliklerle)
+                try:
+                    chatbot._register_agent_tools_limited()
+                except:
+                    pass
             print("✅ Chatbot başlatıldı")
         else:
             print("❌ Chatbot sınıfları yüklenemedi")
     except Exception as e:
         print(f"❌ Chatbot başlatma hatası: {e}")
+        # En kötü durumda bile basit bir chatbot oluştur
+        try:
+            from gemini_chatbot import AgenticGeminiChatbot
+            chatbot = AgenticGeminiChatbot()
+            print("✅ Minimal chatbot başlatıldı")
+        except Exception as fallback_error:
+            print(f"❌ Minimal chatbot bile başlatılamadı: {fallback_error}")
 
 # Static files
 app.mount("/static", StaticFiles(directory="public"), name="static")

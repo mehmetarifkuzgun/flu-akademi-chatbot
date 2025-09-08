@@ -13,11 +13,47 @@ class VectorDatabase:
     
     def __init__(self):
         """Chroma istemcisini başlat"""
-        self.client = chromadb.PersistentClient(
-            path=Config.VECTOR_DB_PATH,
-            settings=Settings(anonymized_telemetry=False)
-        )
-        print(f"✅ Vektör veritabanı başlatıldı: {Config.VECTOR_DB_PATH}")
+        try:
+            # Veritabanı dizininin var olduğundan emin ol
+            import os
+            if not os.path.exists(Config.VECTOR_DB_PATH):
+                os.makedirs(Config.VECTOR_DB_PATH, exist_ok=True)
+            
+            # Eski database dosyalarını temizle eğer permission sorunu varsa
+            db_file = os.path.join(Config.VECTOR_DB_PATH, "chroma.sqlite3")
+            if os.path.exists(db_file):
+                try:
+                    # Dosya izinlerini kontrol et ve düzelt
+                    import stat
+                    current_permissions = os.stat(db_file).st_mode
+                    os.chmod(db_file, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP)
+                except Exception as perm_error:
+                    print(f"⚠️ Dosya izinleri düzeltilemedi: {perm_error}")
+                    # Sorunlu dosyayı sil ve yeniden oluştur
+                    try:
+                        os.remove(db_file)
+                        print("🔄 Sorunlu veritabanı dosyası silindi, yenisi oluşturulacak")
+                    except:
+                        print("❌ Sorunlu veritabanı dosyası silinemedi")
+            
+            self.client = chromadb.PersistentClient(
+                path=Config.VECTOR_DB_PATH,
+                settings=Settings(anonymized_telemetry=False)
+            )
+            print(f"✅ Vektör veritabanı başlatıldı: {Config.VECTOR_DB_PATH}")
+            
+        except Exception as e:
+            print(f"❌ Vektör veritabanı başlatma hatası: {e}")
+            # Fallback: memory-only client
+            try:
+                print("🔄 Memory-only veritabanına geçiliyor...")
+                self.client = chromadb.Client(
+                    settings=Settings(anonymized_telemetry=False)
+                )
+                print("✅ Memory-only vektör veritabanı başlatıldı")
+            except Exception as fallback_error:
+                print(f"❌ Memory-only veritabanı da başlatılamadı: {fallback_error}")
+                raise
     
     def create_collection(self, collection_name: str) -> chromadb.Collection:
         """

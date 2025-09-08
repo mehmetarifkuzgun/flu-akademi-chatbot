@@ -105,6 +105,29 @@ class AgenticDemoChatbot:
             'Kitap içeriğinde detaylı teorik bilgi arar. Kavramsal açıklamalar için kullan.'
         )
     
+    def _register_agent_tools_limited(self):
+        """Agent'ın kullanabileceği araçları kaydet - veritabanı olmadan sınırlı mod"""
+        
+        def limited_search_tool(query: str) -> Dict[str, Any]:
+            """Sınırlı arama - veritabanı olmadan basit yanıt"""
+            return {
+                'documents': [f"Üzgünüm, şu anda veritabanına erişim sorunu yaşıyoruz. '{query}' hakkındaki sorunuzu yanıtlayabilmem için veritabanının çalışır durumda olması gerekiyor."],
+                'source': 'limited'
+            }
+        
+        # Sınırlı araçları agent'a kaydet
+        self.agent.register_tool(
+            'search_transcript', 
+            limited_search_tool,
+            'Ders içeriğinde arama yapar (sınırlı mod).'
+        )
+        
+        self.agent.register_tool(
+            'search_book', 
+            limited_search_tool,
+            'Kitap içeriğinde arama yapar (sınırlı mod).'
+        )
+    
     def _process_and_store_file(self, file_path: str, collection_name: str):
         """Dosyayı işler ve veritabanına kaydeder"""
         print(f"\n📄 İşleniyor: {file_path}")
