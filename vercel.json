@@ -10,11 +10,11 @@
       "dest": "/api/index.py"
     },
     {
-      "src": "/api/(.*)",
+      "src": "/api/(.*)", 
       "dest": "/api/index.py"
     },
     {
-      "src": "/static/(.*)",
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|ico|svg))",
       "dest": "/public/$1"
     },
     {
