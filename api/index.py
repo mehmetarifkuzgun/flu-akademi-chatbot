@@ -10,9 +10,35 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from main import AgenticDemoChatbot
-except ImportError:
-    # Vercel'de import sorunu varsa basit bir fallback
-    AgenticDemoChatbot = None
+    print("✅ AgenticDemoChatbot imported successfully")
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    # ChromaDB olmadan basit chatbot oluştur
+    import google.generativeai as genai
+    import os
+    
+    class SimpleChatbot:
+        def __init__(self):
+            api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyBmM645CwfEOyhkJj7U9zX1OFXZC3BDUMM")
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-pro')
+            
+        def ask_question_stream(self, question: str):
+            try:
+                system_prompt = """Sen Flu Akademi'nin Neolitik Devrim konusunda uzman bir ders asistanısın. 
+                Öğrencilere Neolitik dönem, tarım devrimi, yerleşik hayata geçiş ve bu dönemin toplumsal etkileri hakkında 
+                bilgi veriyorsun. Türkçe yanıt ver ve akademik ama anlaşılır bir dil kullan."""
+                
+                full_prompt = f"{system_prompt}\n\nSoru: {question}\n\nYanıt:"
+                response = self.model.generate_content(full_prompt, stream=True)
+                
+                for chunk in response:
+                    if chunk.text:
+                        yield chunk.text
+            except Exception as e:
+                yield f"❌ Hata: {str(e)}"
+                
+    AgenticDemoChatbot = SimpleChatbot
 
 app = FastAPI()
 
