@@ -28,12 +28,10 @@ class ChatBot {
                 '/ws/chat' : '/ws/chat';
             
             const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
-            console.log('🔌 WebSocket bağlanıyor:', wsUrl);
             
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = () => {
-                console.log('🔌 WebSocket bağlantısı kuruldu');
                 this.isConnected = true;
                 this.updateSendButton();
             };
@@ -44,7 +42,6 @@ class ChatBot {
             };
 
             this.ws.onclose = () => {
-                console.log('🔌 WebSocket bağlantısı kesildi');
                 this.isConnected = false;
                 this.updateSendButton();
                 // 3 saniye sonra yeniden bağlan
@@ -64,7 +61,6 @@ class ChatBot {
     }
 
     handleWebSocketMessage(data) {
-        console.log('📨 WebSocket mesajı:', data.type, data); // Debug için
         
         switch (data.type) {
             case 'bot_thinking':
@@ -196,7 +192,6 @@ class ChatBot {
     }
 
     showThinkingIndicator() {
-        console.log('🤔 Thinking indicator gösteriliyor'); // Debug için
         
         // Remove existing thinking indicator
         this.hideThinkingIndicator();
@@ -237,7 +232,6 @@ class ChatBot {
     }
 
     hideThinkingIndicator() {
-        console.log('🤔 Thinking indicator gizleniyor'); // Debug için
         const existing = document.getElementById('thinking-indicator');
         if (existing) {
             existing.remove();
@@ -419,18 +413,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeDropdown = document.getElementById('close-dropdown');
     const courseItems = document.querySelectorAll('.course-item');
 
-    console.log('Course selector elements:', {
-        courseSelectorBtn,
-        courseDropdown,
-        closeDropdown,
-        courseItems: courseItems.length
-    });
-
     if (courseSelectorBtn && courseDropdown) {
         // Toggle dropdown
         courseSelectorBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log('Course selector clicked');
             courseDropdown.classList.toggle('show');
         });
 
@@ -452,7 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
         courseItems.forEach(item => {
             item.addEventListener('click', () => {
                 const courseId = item.getAttribute('data-course');
-                console.log('Seçilen ders:', courseId);
                 
                 // YouTube videoyu açabilir veya ders içeriğini yükleyebiliriz
                 if (courseId === 'neolitik') {
@@ -504,4 +489,125 @@ document.addEventListener('DOMContentLoaded', () => {
             window.open('https://azure.microsoft.com/en-us/products/ai-studio', '_blank');
         });
     }
+
+    // Mobile-specific functionality
+    initMobileFeatures();
 });
+
+// Mobile-specific features
+function initMobileFeatures() {
+    // Prevent zoom on iOS when focusing input
+    if (isIOS()) {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            // Ensure minimum font size to prevent zoom
+            chatInput.style.fontSize = '16px';
+        }
+    }
+
+    // Handle viewport height changes on mobile (keyboard show/hide)
+    let initialViewportHeight = window.innerHeight;
+    
+    function handleViewportChange() {
+        const currentHeight = window.innerHeight;
+        const heightDifference = initialViewportHeight - currentHeight;
+        
+        // If height decreased significantly (keyboard likely opened)
+        if (heightDifference > 150) {
+            document.body.classList.add('keyboard-open');
+            // Scroll to bottom when keyboard opens
+            setTimeout(() => {
+                const messagesContainer = document.getElementById('messages-container');
+                if (messagesContainer) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }, 100);
+        } else {
+            document.body.classList.remove('keyboard-open');
+        }
+    }
+
+    // Listen for viewport changes
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            initialViewportHeight = window.innerHeight;
+            handleViewportChange();
+        }, 500);
+    });
+
+    // Touch-friendly interactions
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    // Handle pull-to-refresh prevention
+    document.addEventListener('touchstart', function(e) {
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+        touchEndY = e.changedTouches[0].screenY;
+        handleGesture();
+    }, { passive: true });
+
+    function handleGesture() {
+        const swipeDistance = touchEndY - touchStartY;
+        const messagesContainer = document.getElementById('messages-container');
+        
+        // If swiping down at the top of messages, prevent browser refresh
+        if (swipeDistance > 50 && messagesContainer && messagesContainer.scrollTop === 0) {
+            // Could add a custom pull-to-refresh here if needed
+        }
+    }
+
+    // Better mobile dropdown behavior
+    const courseDropdown = document.getElementById('course-dropdown');
+    const closeDropdownBtn = document.getElementById('close-dropdown');
+    
+    if (courseDropdown && closeDropdownBtn) {
+        // Close dropdown when clicking overlay (mobile)
+        courseDropdown.addEventListener('click', (e) => {
+            if (e.target === courseDropdown) {
+                courseDropdown.classList.remove('show');
+            }
+        });
+
+        // Prevent dropdown content clicks from closing
+        const courseList = courseDropdown.querySelector('.course-list');
+        if (courseList) {
+            courseList.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+    }
+
+    // Mobile-optimized scrolling
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer && isMobile()) {
+        // Smoother scrolling on mobile
+        messagesContainer.style.webkitOverflowScrolling = 'touch';
+        messagesContainer.style.scrollBehavior = 'smooth';
+    }
+
+    // Handle safe area insets for devices with notches
+    if (CSS.supports('padding-top: env(safe-area-inset-top)')) {
+        document.documentElement.style.setProperty('--safe-area-top', 'env(safe-area-inset-top)');
+        document.documentElement.style.setProperty('--safe-area-bottom', 'env(safe-area-inset-bottom)');
+    }
+}
+
+// Utility functions for mobile detection
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           ('ontouchstart' in window) || 
+           (navigator.maxTouchPoints > 0);
+}
+
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isAndroid() {
+    return /Android/i.test(navigator.userAgent);
+}
