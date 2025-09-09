@@ -64,6 +64,8 @@ class ChatBot {
     }
 
     handleWebSocketMessage(data) {
+        console.log('📨 WebSocket mesajı:', data.type, data); // Debug için
+        
         switch (data.type) {
             case 'bot_thinking':
                 this.isThinking = true;
@@ -89,6 +91,7 @@ class ChatBot {
             case 'error':
                 this.addMessage(data.content, 'bot', true);
                 this.isThinking = false;
+                this.hideThinkingIndicator();
                 this.currentBotMessage = '';
                 break;
         }
@@ -188,12 +191,15 @@ class ChatBot {
     }
 
     showThinkingIndicator() {
+        console.log('🤔 Thinking indicator gösteriliyor'); // Debug için
+        
         // Remove existing thinking indicator
         this.hideThinkingIndicator();
         
         const thinkingDiv = document.createElement('div');
         thinkingDiv.className = 'message bot-message thinking';
         thinkingDiv.id = 'thinking-indicator';
+        thinkingDiv.style.opacity = '1'; // Görünürlük garantisi
         
         // Add avatar for bot messages
         const avatarDiv = document.createElement('div');
@@ -211,6 +217,8 @@ class ChatBot {
         const textDiv = document.createElement('div');
         textDiv.className = 'thinking-text';
         textDiv.textContent = 'Düşünelim...';
+        textDiv.style.fontWeight = 'bold'; // Daha belirgin yap
+        textDiv.style.color = '#666'; // Renk ekle
         
         contentDiv.appendChild(dotsDiv);
         contentDiv.appendChild(textDiv);
@@ -218,11 +226,15 @@ class ChatBot {
         
         this.messagesContainer.appendChild(thinkingDiv);
         this.scrollToBottom();
+        
+        // Force render
+        thinkingDiv.offsetHeight;
     }
 
     hideThinkingIndicator() {
         const existing = document.getElementById('thinking-indicator');
         if (existing) {
+            console.log('🤔 Thinking indicator gizleniyor'); // Debug için
             existing.remove();
         }
     }
