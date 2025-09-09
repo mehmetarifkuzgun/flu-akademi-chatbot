@@ -3,7 +3,7 @@ services:
     name: flu-akademi-chatbot
     env: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python api/index.py
     envVars:
       - key: PYTHON_VERSION
