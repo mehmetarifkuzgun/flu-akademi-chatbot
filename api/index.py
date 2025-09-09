@@ -64,15 +64,11 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message.strip():
                 continue
             
-            # Bot yanıtını başlat - Thinking indicator
+            # Bot yanıtını başlat
             await manager.send_message(json.dumps({
                 "type": "bot_thinking",
                 "content": "🤔 Model analiz ediyor..."
             }), websocket)
-            
-            # Render'da WebSocket mesajlarının düzgün görünmesi için kısa gecikme
-            import asyncio
-            await asyncio.sleep(0.5)
             
             if chatbot is None:
                 await manager.send_message(json.dumps({
@@ -81,14 +77,15 @@ async def websocket_chat(websocket: WebSocket):
                 }), websocket)
                 continue
 
-            # Streaming yanıt başlatma
+            # Thinking indicator'ın görünmesi için minimum gecikme
+            import asyncio
+            await asyncio.sleep(1.0)  # 1 saniye minimum thinking time
+            
+            # Streaming yanıt başlat (sadece frontend'e stream başlıyor sinyali)
             await manager.send_message(json.dumps({
                 "type": "bot_start",
                 "content": ""
             }), websocket)
-            
-            # Streaming başlamadan önce kısa gecikme
-            await asyncio.sleep(0.2)
             
             try:
                 full_response = ""

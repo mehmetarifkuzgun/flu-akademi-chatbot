@@ -73,18 +73,23 @@ class ChatBot {
                 break;
             
             case 'bot_start':
-                this.isThinking = false;
-                this.hideThinkingIndicator();
+                // Thinking indicator'ı burada GİZLEME, ilk chunk geldiğinde gizle
                 this.currentBotMessage = '';
                 break;
             
             case 'bot_chunk':
+                // İlk chunk geldiğinde thinking indicator'ı gizle
+                if (this.isThinking) {
+                    this.isThinking = false;
+                    this.hideThinkingIndicator();
+                }
                 this.updateStreamingMessage(data.full_content);
                 break;
             
             case 'bot_complete':
                 this.finalizeMessage(data.content);
                 this.isThinking = false;
+                this.hideThinkingIndicator(); // Güvenlik için
                 this.currentBotMessage = '';
                 break;
             
@@ -199,7 +204,7 @@ class ChatBot {
         const thinkingDiv = document.createElement('div');
         thinkingDiv.className = 'message bot-message thinking';
         thinkingDiv.id = 'thinking-indicator';
-        thinkingDiv.style.opacity = '1'; // Görünürlük garantisi
+        thinkingDiv.style.minHeight = '60px'; // Minimum yükseklik garantisi
         
         // Add avatar for bot messages
         const avatarDiv = document.createElement('div');
@@ -209,6 +214,7 @@ class ChatBot {
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
+        contentDiv.style.padding = '12px'; // Daha fazla alan
         
         const dotsDiv = document.createElement('div');
         dotsDiv.className = 'thinking-dots';
@@ -217,8 +223,10 @@ class ChatBot {
         const textDiv = document.createElement('div');
         textDiv.className = 'thinking-text';
         textDiv.textContent = 'Düşünelim...';
-        textDiv.style.fontWeight = 'bold'; // Daha belirgin yap
-        textDiv.style.color = '#666'; // Renk ekle
+        textDiv.style.fontWeight = 'bold';
+        textDiv.style.fontSize = '14px';
+        textDiv.style.color = '#666';
+        textDiv.style.marginTop = '8px';
         
         contentDiv.appendChild(dotsDiv);
         contentDiv.appendChild(textDiv);
@@ -226,15 +234,12 @@ class ChatBot {
         
         this.messagesContainer.appendChild(thinkingDiv);
         this.scrollToBottom();
-        
-        // Force render
-        thinkingDiv.offsetHeight;
     }
 
     hideThinkingIndicator() {
+        console.log('🤔 Thinking indicator gizleniyor'); // Debug için
         const existing = document.getElementById('thinking-indicator');
         if (existing) {
-            console.log('🤔 Thinking indicator gizleniyor'); // Debug için
             existing.remove();
         }
     }
