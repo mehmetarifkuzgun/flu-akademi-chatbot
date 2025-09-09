@@ -21,8 +21,8 @@ class Config:
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 1000))
     CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 200))
     
-    # Vector DB Settings
-    VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./chroma_db")
+    # Vector DB Settings - Render uyumlu path
+    VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "/var/data/chroma_db" if os.getenv("RENDER") else "./chroma_db")
     
     # Collection Names
     TRANSCRIPT_COLLECTION = "transcript_collection"

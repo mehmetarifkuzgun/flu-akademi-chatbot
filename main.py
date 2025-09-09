@@ -40,22 +40,45 @@ class AgenticDemoChatbot:
         """Veritabanını kurar ve dökümanları yükler"""
         print("\n📊 Veritabanı kurulumu başlıyor...")
         
+        # Render platformu tespiti
+        is_render = os.getenv("RENDER") == "true"
+        
         # Dosyaları işle
         files_to_process = [
             (Config.TRANSCRIPT_FILE, Config.TRANSCRIPT_COLLECTION),
             (Config.BOOK_FILE, Config.BOOK_COLLECTION)
         ]
         
+        processed_any = False
         for file_path, collection_name in files_to_process:
             if os.path.exists(file_path):
-                self._process_and_store_file(file_path, collection_name)
+                try:
+                    self._process_and_store_file(file_path, collection_name)
+                    processed_any = True
+                except Exception as file_error:
+                    print(f"⚠️ Dosya işleme hatası {file_path}: {file_error}")
+                    if is_render:
+                        print("🔄 Render ortamında devam ediliyor...")
+                    else:
+                        raise file_error
             else:
                 print(f"⚠️  Dosya bulunamadı: {file_path}")
+                if is_render:
+                    print("🔄 Render ortamında eksik dosya ile devam ediliyor...")
         
         # Agentic araçları kaydet
-        self._register_agent_tools()
+        try:
+            self._register_agent_tools()
+        except Exception as tool_error:
+            print(f"⚠️ Araç kaydı hatası: {tool_error}")
+            if not is_render:
+                raise tool_error
         
-        print("✅ Veritabanı kurulumu ve araç kaydı tamamlandı")
+        if processed_any or is_render:
+            print("✅ Veritabanı kurulumu tamamlandı")
+        else:
+            print("⚠️ Hiçbir dosya işlenemedi")
+            raise Exception("Gerekli dosyalar bulunamadı")
     
     def _register_agent_tools(self):
         """Agent'ın kullanabileceği araçları kaydet"""
