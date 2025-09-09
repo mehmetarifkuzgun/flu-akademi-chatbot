@@ -287,7 +287,10 @@ Genel bilginle yardımcı bir yanıt ver."""
 5. Hangi kaynaktan bilgi aldığını belirt.
 6. İnsanlara konuyu anlamalarında yardımcı ol. Bu esnada yorum yapman, örnek vermen gerekiyorsa ver.
 7. Doğrudan ders metnini yazmak yerine bunu öğrencinin anlaması için daha detaylı anlat. Yorumla ve açıkla.
-8. Ders içeriğinden bahsederken "hocanın dersinde..." şeklinde ifade et."""
+8. Ders içeriğinden bahsederken "hocanın dersinde..." şeklinde ifade et.
+9. Konu dışı bir soru gelirse kibarca sınırlarını belirt ve yanıt verme.
+10. Bağlantılı konularda tartışma yapabilirsin.
+"""
 
         if context:
             source_text = f"\n\nKAYNAK: {source_info}" if source_info else ""
