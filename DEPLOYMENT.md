@@ -6,7 +6,7 @@
 - [x] `Procfile` - Process definition
 - [x] `requirements.txt` - Python dependencies
 - [x] `runtime.txt` - Python version specification
-- [x] `env.example` - Environment variables example
+- [x] `.env.example` - Environment variables example
 
 ## ✅ Kod Optimizasyonları
 

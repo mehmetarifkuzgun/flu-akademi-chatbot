@@ -12,8 +12,12 @@ class EmbeddingGenerator:
     
     def __init__(self):
         """Google AI istemcisini başlat"""
-        genai.configure(api_key=Config.GOOGLE_API_KEY)
+        self.offline = Config.OFFLINE
         self.model = Config.EMBEDDING_MODEL
+        if self.offline:
+            print("🧪 Çevrimdışı mod: hash tabanlı embedding kullanılıyor (Google API çağrılmaz)")
+            return
+        genai.configure(api_key=Config.GOOGLE_API_KEY)
         print("✅ Google Embeddings başlatıldı")
     
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
@@ -26,6 +30,9 @@ class EmbeddingGenerator:
         Returns:
             Embedding vektörlerinin listesi
         """
+        if self.offline:
+            from offline import hash_embedding
+            return [hash_embedding(t) for t in texts]
         try:
             print(f"🔄 {len(texts)} metin için Google embeddings oluşturuluyor...")
             
@@ -61,6 +68,9 @@ class EmbeddingGenerator:
         Returns:
             Embedding vektörü
         """
+        if self.offline:
+            from offline import hash_embedding
+            return hash_embedding(text)
         try:
             print("🔄 Sorgu için Google embedding oluşturuluyor...")
             result = genai.embed_content(

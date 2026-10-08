@@ -112,7 +112,8 @@ class VectorDatabase:
                 print(f"❌ Tüm client seçenekleri başarısız: {final_error}")
                 raise final_error
     
-    def create_collection(self, collection_name: str) -> chromadb.Collection:
+    def create_collection(self, collection_name: str,
+                          extra_metadata: Optional[Dict[str, Any]] = None) -> chromadb.Collection:
         """
         Koleksiyon oluştur veya mevcut olanı al
         
@@ -132,7 +133,7 @@ class VectorDatabase:
             
             collection = self.client.create_collection(
                 name=collection_name,
-                metadata={"hnsw:space": "cosine"}
+                metadata={"hnsw:space": "cosine", **(extra_metadata or {})}
             )
             print(f"✅ Koleksiyon oluşturuldu: {collection_name}")
             return collection

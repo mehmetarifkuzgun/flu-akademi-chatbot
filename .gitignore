@@ -32,3 +32,8 @@ Thumbs.db
 
 # Old frontend folder (if you want to keep it)
 # frontend/
+
+# Tests / tooling
+.pytest_cache/
+.env.*
+!.env.example

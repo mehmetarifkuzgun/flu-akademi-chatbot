@@ -3,6 +3,7 @@ Ana chatbot sistemi - Agentic Approach
 Bu modül agentic chatbot'u çalıştırır, model kendi kararlarını verir.
 """
 
+import hashlib
 import os
 import sys
 import time
@@ -151,13 +152,33 @@ class AgenticDemoChatbot:
             'Kitap içeriğinde arama yapar (sınırlı mod).'
         )
     
+    def _content_hash(self, content: str) -> str:
+        """Dosya içeriği + parçalama/embedding ayarlarının parmak izi"""
+        signature = f"{Config.CHUNK_SIZE}|{Config.CHUNK_OVERLAP}|{Config.EMBEDDING_MODEL}|{Config.OFFLINE}|{content}"
+        return hashlib.sha256(signature.encode("utf-8")).hexdigest()
+    
+    def _remember_collection(self, collection_name: str, collection):
+        if collection_name == Config.TRANSCRIPT_COLLECTION:
+            self.transcript_collection = collection
+        elif collection_name == Config.BOOK_COLLECTION:
+            self.book_collection = collection
+    
     def _process_and_store_file(self, file_path: str, collection_name: str):
-        """Dosyayı işler ve veritabanına kaydeder"""
+        """Dosyayı işler ve veritabanına kaydeder (içerik değişmediyse mevcut koleksiyonu kullanır)"""
         print(f"\n📄 İşleniyor: {file_path}")
         
         # Dosyayı oku ve parçala
         content = self.text_processor.read_file(file_path)
         if not content:
+            return
+        
+        # Aynı içerik daha önce embed edildiyse API'ye tekrar gitme (yeniden başlatmalar hızlı ve ücretsiz olur)
+        content_hash = self._content_hash(content)
+        existing = self.vector_db.get_collection(collection_name)
+        if existing is not None and (existing.metadata or {}).get("content_hash") == content_hash \
+                and existing.count() > 0:
+            print(f"♻️  İçerik değişmedi, mevcut koleksiyon kullanılıyor: {collection_name} ({existing.count()} parça)")
+            self._remember_collection(collection_name, existing)
             return
         
         chunks = self.text_processor.create_chunks(content)
@@ -170,16 +191,13 @@ class AgenticDemoChatbot:
             return
         
         # Koleksiyon oluştur ve dökümanları ekle
-        collection = self.vector_db.create_collection(collection_name)
+        collection = self.vector_db.create_collection(collection_name, {"content_hash": content_hash})
         
         metadatas = [{"source": file_path, "chunk_index": i} for i in range(len(chunks))]
         self.vector_db.add_documents(collection, chunks, embeddings, metadatas)
         
         # Koleksiyon referansını sakla
-        if collection_name == Config.TRANSCRIPT_COLLECTION:
-            self.transcript_collection = collection
-        elif collection_name == Config.BOOK_COLLECTION:
-            self.book_collection = collection
+        self._remember_collection(collection_name, collection)
     
     def ask_question_agentic(self, question: str) -> str:
         """
@@ -223,7 +241,7 @@ class AgenticDemoChatbot:
         print("\n🧠 Agent kendi kararını verir:")
         print("   🎯 Model sorunuzu analiz eder")
         print("   🔧 Gerekli araçları seçer") 
-        print("   � Size en iyi yanıtı verir\n")
+        print("   💬 Size en iyi yanıtı verir\n")
         
         while True:
             try:
@@ -236,8 +254,12 @@ class AgenticDemoChatbot:
                 if not user_input:
                     continue
                 
-                # Agentic streaming yanıt kullan
-                self.ask_question_agentic_stream(user_input)
+                # Agentic streaming yanıt: üreteci tüketip parçaları yazdır
+                # (önceden üreteç hiç çalıştırılmadığı için CLI hiçbir şey yazdırmıyordu)
+                print("🤖 Asistan: ", end="", flush=True)
+                for chunk in self.ask_question_agentic_stream(user_input):
+                    print(chunk, end="", flush=True)
+                print("\n")
                 
             except KeyboardInterrupt:
                 print("\n👋 Güle güle!")
