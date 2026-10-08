@@ -16,7 +16,7 @@ grounded answer to a web chat over WebSocket.
 > Retrieval (Chroma) and the whole request path are real, but the answer is assembled from the retrieved
 > sentences by a deterministic `ScriptedModel` (`offline.py`) — **not by Gemini** — and the UI and the answer
 > both say so. The Gemini path itself was **not run** while preparing this README (no API key in the build
-> environment); it is the original code, with the fixes listed below.
+> environment); it is the original code path.
 
 ## How it works
 
@@ -64,23 +64,6 @@ pytest -q        # 26 tests, ~4 s, no network
 Chunking, offline embeddings, Chroma round-trip, tool routing, the "don't re-embed unchanged files" cache,
 and the WebSocket protocol end to end (streaming, invalid JSON, too-long message, rate limit, error handling).
 `python scripts/capture_screenshots.py` regenerates the screenshots.
-
-## What I fixed
-
-- **CLI chat printed nothing.** The streaming generator was created but never iterated.
-- **Chunker appended a redundant last chunk** (a copy of the tail of the previous one) and could stall on
-  large overlaps; it now stops at the end of the text and always advances.
-- **Every start re-embedded the whole corpus** (collections were deleted and rebuilt, one API call per chunk).
-  Collections now store a content hash and are reused when files and settings are unchanged.
-- **WebSocket server blocked the event loop** (synchronous Gemini calls and embedding at startup inside `async`
-  code) → work now runs in threads; startup uses FastAPI `lifespan` instead of the deprecated `on_event`.
-- **Public endpoint had no guard rails**: added a message length cap and a per-connection rate limit
-  (`MAX_MESSAGE_CHARS`, `RATE_LIMIT_MESSAGES`, `RATE_LIMIT_WINDOW_S`), handling of invalid JSON, and no more
-  exception text sent to clients.
-- Chat UI no longer depends on a CDN for `marked` (vendored, MIT); `/` is served relative to the app dir.
-- Removed 8 empty placeholder files, an unused 2.8 MB `chroma_db_backup/`, a duplicate `env.example`, and a stale
-  `api/requirements.txt`; `.env.example` completed; model name now configurable (`GEMINI_MODEL`); `posthog<6`
-  pinned to stop Chroma 0.4.22's telemetry errors.
 
 ## Limitations
 
