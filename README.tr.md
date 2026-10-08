@@ -23,15 +23,6 @@ CHATBOT_OFFLINE=1 TRANSCRIPT_FILE=sample_data/transcript.txt BOOK_FILE=sample_da
 
 **Testler:** `pip install -r requirements.txt pytest "httpx<0.28" && pytest -q` (26 test, ağ gerekmez).
 
-## Yaptığım düzeltmeler
-
-- Terminal sohbeti hiçbir şey yazdırmıyordu (üreteç hiç tüketilmiyordu).
-- Parçalayıcı son parçanın bir kopyasını ekliyordu; artık metin bitince duruyor.
-- Her açılışta tüm metin yeniden embed ediliyordu; artık içerik özeti (hash) aynıysa mevcut koleksiyon kullanılıyor.
-- WebSocket sunucusu event loop'u bloke ediyordu; işler thread'e alındı, `lifespan` kullanıldı.
-- Mesaj uzunluğu sınırı, bağlantı başına hız sınırı, geçersiz JSON denetimi; hata ayrıntıları istemciye gönderilmiyor.
-- `marked` CDN yerine yerelden sunuluyor; boş dosyalar, kullanılmayan 2,8 MB yedek klasörü ve yinelenen dosyalar kaldırıldı.
-
 ## Sınırlamalar ve içerik notu
 
 Kullanımdan kalkmış `google-generativeai` SDK'sı kullanılıyor; konuşma hafızası yok; bot yanıtları `innerHTML`'e
