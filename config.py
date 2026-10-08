@@ -14,6 +14,13 @@ class Config:
     # API Keys
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     
+    # CHATBOT_OFFLINE=1: Gemini yerine betikli (scripted) model + hash tabanlı embedding
+    # kullanır (API anahtarı gerekmez; demo ve testler içindir, bkz. offline.py)
+    OFFLINE = os.getenv("CHATBOT_OFFLINE", "").lower() in ("1", "true", "yes")
+    
+    # Üretim modeli
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    
     # Embedding Settings - Google'ın embedding modeli
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "models/embedding-001")
     
@@ -29,15 +36,15 @@ class Config:
     BOOK_COLLECTION = "book_collection"
     
     # File Paths
-    TRANSCRIPT_FILE = "transcript.txt"
-    BOOK_FILE = "kitap.txt"
+    TRANSCRIPT_FILE = os.getenv("TRANSCRIPT_FILE", "transcript.txt")
+    BOOK_FILE = os.getenv("BOOK_FILE", "kitap.txt")
     
     @classmethod
     def validate_config(cls):
         """Konfigürasyonu doğrula"""
         missing_keys = []
         
-        if not cls.GOOGLE_API_KEY:
+        if not cls.GOOGLE_API_KEY and not cls.OFFLINE:
             missing_keys.append("GOOGLE_API_KEY")
             
         if missing_keys:

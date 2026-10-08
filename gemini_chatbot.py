@@ -12,8 +12,13 @@ class AgenticGeminiChatbot:
     
     def __init__(self):
         """Gemini API'yi yapılandır"""
-        genai.configure(api_key=Config.GOOGLE_API_KEY)
-        self.model = genai.GenerativeModel('gemini-2.5-flash') #flash
+        if Config.OFFLINE:
+            from offline import ScriptedModel
+            self.model = ScriptedModel()
+            print("🧪 Çevrimdışı mod: betikli model kullanılıyor (gerçek bir dil modeli değil)")
+        else:
+            genai.configure(api_key=Config.GOOGLE_API_KEY)
+            self.model = genai.GenerativeModel(Config.GEMINI_MODEL)
         
         # Araçları sakla
         self.available_tools = {}

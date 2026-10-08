@@ -16,6 +16,21 @@ class ChatBot {
         this.init();
         this.initWavesAnimation();
         this.connectWebSocket();
+        this.showOfflineBannerIfNeeded();
+    }
+
+    // Sunucu CHATBOT_OFFLINE=1 ile çalışıyorsa yanıtların model çıktısı olmadığını açıkça göster
+    async showOfflineBannerIfNeeded() {
+        try {
+            const health = await (await fetch('/health')).json();
+            if (!health.offline_demo) return;
+            const banner = document.createElement('div');
+            banner.id = 'offline-banner';
+            banner.textContent = '🧪 Çevrimdışı demo modu: yanıtlar dil modeli tarafından üretilmez, getirilen metinlerden derlenir (arama gerçektir).';
+            banner.style.cssText = 'position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:1000;padding:4px 14px;' +
+                'background:#fff3cd;color:#664d03;font-size:12px;text-align:center;border:1px solid #ffe69c;border-radius:14px;max-width:92vw;';
+            document.body.appendChild(banner);
+        } catch (e) { /* health endpoint yoksa sessizce geç */ }
     }
 
     connectWebSocket() {

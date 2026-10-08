@@ -77,10 +77,14 @@ class TextProcessor:
             if chunk:
                 chunks.append(chunk)
             
+            # Metnin sonuna ulaşıldıysa dur (aksi halde son parçanın kopyası eklenirdi)
+            if end >= len(text):
+                break
+            
             # Bir sonraki başlangıç noktasını belirle (örtüşme ile)
-            start = end - self.chunk_overlap
-            if start < 0:
-                start = end
+            next_start = end - self.chunk_overlap
+            # İlerleme garantisi: başlangıç noktası mutlaka ileri gitmeli
+            start = next_start if next_start > start else end
         
         print(f"✅ Metin {len(chunks)} parçaya bölündü")
         return chunks
